@@ -64,6 +64,7 @@ jobs:
       - name: Create GitHub Issue
         run: |
          RUN_DATE=$(date --utc)
+         THIS_FILE='Scorecards-with-default-GH-Token-main.yml'
          go env -w GOFLAGS=-mod=mod
          go install github.com/naveensrinivasan/Create-GitHub-Issue@22673baa793380281a4346e8defab7f367035a10
          Create-GitHub-Issue ossf scorecard-action ${{ secrets.SCORECARD_TOKEN }} "Failed to run e2e ${{ github.repository }}" "e2e,automated-tests" "Repo: https://github.com/$GITHUB_REPOSITORY/tree/$GITHUB_REF_NAME \n Run: https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID \n Workflow name: $GITHUB_WORKFLOW \n Workflow file: https://github.com/$GITHUB_REPOSITORY/tree/main/.github/workflows/$THIS_FILE \n Trigger: $GITHUB_EVENT_NAME \n Branch: $GITHUB_REF_NAME \n Date: $RUN_DATE"
