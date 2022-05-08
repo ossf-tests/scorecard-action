@@ -65,4 +65,4 @@ jobs:
         run: |
          go env -w GOFLAGS=-mod=mod
          go install github.com/naveensrinivasan/Create-GitHub-Issue@22673baa793380281a4346e8defab7f367035a10
-         Create-GitHub-Issue ossf scorecard-action ${{ secrets.SCORECARD_TOKEN }} "Failed to run automated scorecard-action@main ${{ github.repository }}" "e2e,automated-tests" "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+         Create-GitHub-Issue ossf scorecard-action ${{ secrets.SCORECARD_READ_TOKEN }} "Failed to run automated scorecard-action@main ${{ github.repository }}" "e2e,automated-tests" "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
