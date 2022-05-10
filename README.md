@@ -5,6 +5,7 @@
 
 The Scorecards GitHub Action is free for all public repositories. Private repositories are supported if they have [GitHub Advanced Security](https://docs.github.com/en/get-started/learning-about-github/about-github-advanced-security). Private repositories without GitHub Advanced Security can run Scorecards from the command line by following the [standard installation instructions](https://github.com/ossf/scorecard#using-scorecards-1).
 
+
 ________
 [Installation](#installation) 
 - [Authentication](#authentication-with-pat)
