@@ -62,7 +62,7 @@ jobs:
         continue-on-error: true
       # Upload the results to GitHub's code scanning dashboard.
       - name: "Upload to code-scanning"
-        if: ${{ matrix.upload_result }} && steps.scorecard-run.outcome == 'success'
+        if: matrix.upload_result == true && steps.scorecard-run.outcome == 'success'
         uses: github/codeql-action/upload-sarif@5f532563584d71fdef14ee64d17bafb34f751ce5 # v1.0.26
         with:
           sarif_file: results.sarif
@@ -75,12 +75,12 @@ jobs:
           title: "Failing e2e tests - scorecard-bash on ${{ github.repository }}"
           body: |
             Matrix: ${{ toJSON(matrix) }}
-            Repo: https://github.com/${{ env.GITHUB_REPOSITORY }}/tree/${{ env.GITHUB_REF_NAME }}
-            Run: https://github.com/${{ env.GITHUB_REPOSITORY }}/actions/runs/${{ env.GITHUB_RUN_ID }}
-            Workflow name: ${{ env.GITHUB_WORKFLOW }}
-            Workflow file: https://github.com/${{ env.GITHUB_REPOSITORY }}/tree/main/.github/workflows/scorecards-bash.yml
-            Trigger: ${{ env.GITHUB_EVENT_NAME }}
-            Branch: ${{ env.GITHUB_REF_NAME }}
+            Repo: https://github.com/${{ github.repository }}/tree/${{ github.ref_name }}
+            Run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            Workflow name: ${{ github.workflow }}
+            Workflow file: https://github.com/${{ github.repository }}/tree/main/.github/workflows/scorecards-bash.yml
+            Trigger: ${{ github.event_name }}
+            Branch: ${{ github.ref_name }}
           repo: "ossf/scorecard-action"
           labels: |
             e2e
