@@ -27,6 +27,10 @@ jobs:
         include:
           - results_format: sarif
             upload_result: true
+          - results_format: json
+            upload_result: false
+          - results_format: default
+            upload_result: false
     steps:
       - name: "Checkout code"
         uses: actions/checkout@ec3a7ce113134d7a93b817d10a8272cb61118579 # v2.4.0
@@ -71,12 +75,12 @@ jobs:
           title: "Failing e2e tests - scorecard-golang on ${{ github.repository }}"
           body: |
             Matrix: ${{ toJSON(matrix) }}
-            Repo: https://github.com/$GITHUB_REPOSITORY/tree/$GITHUB_REF_NAME
-            Run: https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID
-            Workflow name: $GITHUB_WORKFLOW
-            Workflow file: https://github.com/$GITHUB_REPOSITORY/tree/main/.github/workflows/scorecards-golang.yml
-            Trigger: $GITHUB_EVENT_NAME
-            Branch: $GITHUB_REF_NAME
+            Repo: https://github.com/${{ env.GITHUB_REPOSITORY }}/tree/${{ env.GITHUB_REF_NAME }}
+            Run: https://github.com/${{ env.GITHUB_REPOSITORY }}/actions/runs/${{ env.GITHUB_RUN_ID }}
+            Workflow name: ${{ env.GITHUB_WORKFLOW }}
+            Workflow file: https://github.com/${{ env.GITHUB_REPOSITORY }}/tree/main/.github/workflows/scorecards-golang.yml
+            Trigger: ${{ env.GITHUB_EVENT_NAME }}
+            Branch: ${{ env.GITHUB_REF_NAME }}
           repo: "ossf/scorecard-action"
           labels: |
             e2e
