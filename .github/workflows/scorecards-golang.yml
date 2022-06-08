@@ -40,8 +40,9 @@ jobs:
           persist-credentials: false
       - name: "Run analysis"
         id: scorecard-run
-        uses: ossf/scorecard-action@golang-staging
+        uses: docker://gcr.io/openssf/scorecard-action:latest
         with:
+          entrypoint: "/scorecard-action"
           results_file: results.${{ matrix.results_format }}
           results_format: ${{ matrix.results_format }}
           # Read-only PAT token. To create it,
