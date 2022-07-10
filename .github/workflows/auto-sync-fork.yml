@@ -13,7 +13,7 @@ jobs:
     steps:
       - name: "gh repo sync"
         id: gh-repo-sync
-        run: gh repo sync ossf/scorecard-action -b main
+        run: gh repo sync ${{ github.repository }} -b main
         env:
           GITHUB_TOKEN: ${{ secrets.SCORECARD_READ_TOKEN }}
       - name: "report failure"
