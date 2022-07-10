@@ -20,6 +20,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/ossf/scorecard/v4/checks"
 	"github.com/ossf/scorecard/v4/options"
 )
 
@@ -33,6 +34,7 @@ const (
 	githubEventPathIncorrect = "testdata/incorrect.json"
 	githubEventPathBadPath   = "testdata/bad-path.json"
 	githubEventPathBadData   = "testdata/bad-data.json"
+	githubEventPathPublic    = "testdata/public.json"
 )
 
 func TestNew(t *testing.T) {
@@ -43,6 +45,10 @@ func TestNew(t *testing.T) {
 		ResultsFile string
 		Commit      string
 		LogLevel    string
+		Repo        string
+		Local       string
+		ChecksToRun []string
+		ShowDetails bool
 	}
 	tests := []struct {
 		name             string
@@ -61,8 +67,8 @@ func TestNew(t *testing.T) {
 		{
 			name:            "SuccessFormatSARIF",
 			githubEventPath: githubEventPathNonFork,
-			githubEventName: "pull_request",
-			githubRef:       "main",
+			githubEventName: pushEvent,
+			githubRef:       "refs/heads/main",
 			repo:            testRepo,
 			resultsFormat:   "sarif",
 			resultsFile:     testResultsFile,
@@ -73,14 +79,16 @@ func TestNew(t *testing.T) {
 				ResultsFile: testResultsFile,
 				Commit:      options.DefaultCommit,
 				LogLevel:    options.DefaultLogLevel,
+				Repo:        testRepo,
+				ShowDetails: true,
 			},
 			wantErr: false,
 		},
 		{
 			name:            "SuccessFormatJSON",
 			githubEventPath: githubEventPathNonFork,
-			githubEventName: "pull_request",
-			githubRef:       "main",
+			githubEventName: pushEvent,
+			githubRef:       "refs/heads/main",
 			repo:            testRepo,
 			resultsFormat:   "json",
 			resultsFile:     testResultsFile,
@@ -90,14 +98,55 @@ func TestNew(t *testing.T) {
 				ResultsFile: testResultsFile,
 				Commit:      options.DefaultCommit,
 				LogLevel:    options.DefaultLogLevel,
+				Repo:        testRepo,
+				ShowDetails: true,
+			},
+			wantErr: false,
+		},
+		{
+			name:            "SuccessPullRequest",
+			githubEventPath: githubEventPathNonFork,
+			githubEventName: pullRequestEvent,
+			githubRef:       "refs/heads/pr-branch",
+			repo:            testRepo,
+			resultsFormat:   "json",
+			resultsFile:     testResultsFile,
+			want: fields{
+				EnableSarif: true,
+				Format:      options.FormatJSON,
+				ResultsFile: testResultsFile,
+				Commit:      options.DefaultCommit,
+				LogLevel:    options.DefaultLogLevel,
+				Local:       ".",
+				ShowDetails: true,
+			},
+			wantErr: false,
+		},
+		{
+			name:            "SuccessBranchProtectionEvent",
+			githubEventPath: githubEventPathNonFork,
+			githubEventName: branchProtectionEvent,
+			githubRef:       "refs/heads/main",
+			repo:            testRepo,
+			resultsFormat:   "json",
+			resultsFile:     testResultsFile,
+			want: fields{
+				EnableSarif: true,
+				Format:      options.FormatJSON,
+				ResultsFile: testResultsFile,
+				Commit:      options.DefaultCommit,
+				LogLevel:    options.DefaultLogLevel,
+				Repo:        testRepo,
+				ChecksToRun: []string{checks.CheckBranchProtection},
+				ShowDetails: true,
 			},
 			wantErr: false,
 		},
 		{
 			name:            "FailureTokenIsNotSet",
 			githubEventPath: githubEventPathNonFork,
-			githubEventName: "pull_request",
-			githubRef:       "main",
+			githubEventName: pushEvent,
+			githubRef:       "refs/heads/main",
 			repo:            testRepo,
 			resultsFormat:   "sarif",
 			resultsFile:     testResultsFile,
@@ -108,6 +157,8 @@ func TestNew(t *testing.T) {
 				ResultsFile: testResultsFile,
 				Commit:      options.DefaultCommit,
 				LogLevel:    options.DefaultLogLevel,
+				Repo:        testRepo,
+				ShowDetails: true,
 			},
 			unsetToken: true,
 			wantErr:    true,
@@ -115,14 +166,15 @@ func TestNew(t *testing.T) {
 		{
 			name:            "FailureResultsPathNotSet",
 			githubEventPath: githubEventPathNonFork,
-			githubEventName: "pull_request",
-			githubRef:       "main",
+			githubEventName: pushEvent,
+			githubRef:       "refs/heads/main",
 			want: fields{
 				EnableSarif: true,
 				Format:      formatSarif,
 				PolicyFile:  defaultScorecardPolicyFile,
 				Commit:      options.DefaultCommit,
 				LogLevel:    options.DefaultLogLevel,
+				ShowDetails: true,
 			},
 			unsetResultsPath: true,
 			wantErr:          true,
@@ -130,8 +182,8 @@ func TestNew(t *testing.T) {
 		{
 			name:            "FailureResultsPathEmpty",
 			githubEventPath: githubEventPathNonFork,
-			githubEventName: "pull_request",
-			githubRef:       "main",
+			githubEventName: pushEvent,
+			githubRef:       "refs/heads/main",
 			resultsFile:     "",
 			want: fields{
 				EnableSarif: true,
@@ -140,14 +192,15 @@ func TestNew(t *testing.T) {
 				ResultsFile: "",
 				Commit:      options.DefaultCommit,
 				LogLevel:    options.DefaultLogLevel,
+				ShowDetails: true,
 			},
 			wantErr: true,
 		},
 		{
 			name:            "FailureBranchIsntMain",
 			githubEventPath: githubEventPathNonFork,
-			githubEventName: "pull_request",
-			githubRef:       "other-branch",
+			githubEventName: pushEvent,
+			githubRef:       "refs/heads/other-branch",
 			repo:            testRepo,
 			resultsFormat:   "sarif",
 			resultsFile:     testResultsFile,
@@ -158,6 +211,8 @@ func TestNew(t *testing.T) {
 				ResultsFile: testResultsFile,
 				Commit:      options.DefaultCommit,
 				LogLevel:    options.DefaultLogLevel,
+				Repo:        testRepo,
+				ShowDetails: true,
 			},
 			wantErr: true,
 		},
@@ -167,8 +222,12 @@ func TestNew(t *testing.T) {
 			os.Setenv(EnvGithubAuthToken, testToken)
 			defer os.Unsetenv(EnvGithubAuthToken)
 
+			os.Setenv(EnvInputRepoToken, "token-value-123456")
+			defer os.Unsetenv(EnvInputRepoToken)
+
 			if tt.unsetToken {
 				os.Unsetenv(EnvGithubAuthToken)
+				os.Unsetenv(EnvInputRepoToken)
 			}
 
 			os.Setenv(EnvGithubEventPath, tt.githubEventPath)
@@ -202,24 +261,31 @@ func TestNew(t *testing.T) {
 				ResultsFile: scOpts.ResultsFile,
 				Commit:      scOpts.Commit,
 				LogLevel:    scOpts.LogLevel,
+				Repo:        scOpts.Repo,
+				Local:       scOpts.Local,
+				ChecksToRun: scOpts.ChecksToRun,
+				ShowDetails: scOpts.ShowDetails,
 			}
 
-			if (err != nil) != tt.wantErr {
+			if err != nil {
+				t.Fatalf("New(): %v", err)
+			}
+			if !cmp.Equal(tt.want, got) {
+				t.Errorf("New(): -want, +got:\n%s", cmp.Diff(tt.want, got))
+			}
+
+			if err := opts.Validate(); (err != nil) != tt.wantErr {
 				for _, e := range os.Environ() {
 					t.Logf(e)
 				}
-				t.Errorf("New() error = %+v, wantErr %+v", err, tt.wantErr)
+				t.Errorf("Validate() error = %+v, wantErr %+v", err, tt.wantErr)
 				return
-			}
-
-			if !cmp.Equal(tt.want, got) {
-				t.Errorf("New(): -want, +got:\n%s", cmp.Diff(tt.want, got))
 			}
 		})
 	}
 }
 
-func TestInitialize(t *testing.T) {
+func TestSetRepoInfo(t *testing.T) {
 	type fields struct {
 		ScorecardOpts           *options.Options
 		EnabledChecks           string
@@ -281,8 +347,8 @@ func TestInitialize(t *testing.T) {
 				IsForkStr:               tt.fields.IsForkStr,
 				PrivateRepoStr:          tt.fields.PrivateRepoStr,
 			}
-			if err := o.Initialize(); (err != nil) != tt.wantErr {
-				t.Errorf("Options.Initialize() error = %v, wantErr %v", err, tt.wantErr)
+			if err := o.setRepoInfo(); (err != nil) != tt.wantErr {
+				t.Errorf("Options.setRepoInfo() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
@@ -331,6 +397,46 @@ func TestPrint(t *testing.T) {
 				PrivateRepoStr:          tt.fields.PrivateRepoStr,
 			}
 			o.Print()
+		})
+	}
+}
+
+func TestSetPublishResults(t *testing.T) {
+	tests := []struct {
+		name        string
+		privateRepo string
+		userInput   bool
+		want        bool
+	}{
+		{
+			name: "DefaultNoInput",
+			want: false,
+		},
+		{
+			name:        "InputTruePrivateRepo",
+			privateRepo: "true",
+			userInput:   true,
+			want:        false,
+		},
+		{
+			name:        "InvalidValueForPrivateRepo",
+			privateRepo: "invalid-value",
+			want:        false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			opts := &Options{
+				ScorecardOpts: options.New(),
+			}
+			opts.PrivateRepoStr = tt.privateRepo
+
+			opts.setPublishResults()
+			got := opts.PublishResults
+
+			if !cmp.Equal(tt.want, got) {
+				t.Errorf("New(): -want, +got:\n%s", cmp.Diff(tt.want, got))
+			}
 		})
 	}
 }

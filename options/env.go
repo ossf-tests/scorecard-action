@@ -21,6 +21,7 @@ import (
 
 // Environment variables.
 // TODO(env): Remove once environment variables are not used for config.
+//
 //nolint:revive,nolintlint
 const (
 	EnvEnableSarif             = "ENABLE_SARIF"
@@ -37,10 +38,11 @@ const (
 
 	// TODO(input): INPUT_ constants should be removed in a future release once
 	//              they have replacements in upstream scorecard.
-	EnvInputRepoToken      = "INPUT_REPO_TOKEN" //nolint:gosec
-	EnvInputResultsFile    = "INPUT_RESULTS_FILE"
-	EnvInputResultsFormat  = "INPUT_RESULTS_FORMAT"
-	EnvInputPublishResults = "INPUT_PUBLISH_RESULTS"
+	EnvInputRepoToken         = "INPUT_REPO_TOKEN"             //nolint:gosec
+	EnvInputInternalRepoToken = "INPUT_INTERNAL_DEFAULT_TOKEN" //nolint:gosec
+	EnvInputResultsFile       = "INPUT_RESULTS_FILE"
+	EnvInputResultsFormat     = "INPUT_RESULTS_FORMAT"
+	EnvInputPublishResults    = "INPUT_PUBLISH_RESULTS"
 )
 
 // Errors

@@ -22,6 +22,14 @@ set -euo pipefail
 # GITHUB_EVENT_NAME contains the event name.
 # GITHUB_ACTIONS is true in GitHub env.
 
+if [[ -z "$INPUT_REPO_TOKEN" ]]; then
+    INPUT_REPO_TOKEN="$INPUT_INTERNAL_DEFAULT_TOKEN"
+    if [[ -z "$INPUT_REPO_TOKEN" ]]; then
+        exit 2
+    fi
+    echo "The repo_token was empty so GITHUB_TOKEN is used instead"
+fi
+
 export GITHUB_AUTH_TOKEN="$INPUT_REPO_TOKEN"
 export ENABLE_SARIF=1
 export ENABLE_LICENSE=1
@@ -78,7 +86,9 @@ echo "Fork repository: $SCORECARD_IS_FORK"
 echo "Private repository: $SCORECARD_PRIVATE_REPOSITORY"
 echo "Publication enabled: $SCORECARD_PUBLISH_RESULTS"
 echo "Format: $SCORECARD_RESULTS_FORMAT"
-echo "Policy file: $SCORECARD_POLICY_FILE"
+if ! [ -z ${SCORECARD_POLICY_FILE+x} ]; then
+  echo "Policy file: $SCORECARD_POLICY_FILE"
+fi
 echo "Default branch: $SCORECARD_DEFAULT_BRANCH"
 echo "$(<repo_info.json)"
 rm repo_info.json
@@ -113,8 +123,7 @@ cd "$GITHUB_WORKSPACE"
 if [[ "$GITHUB_EVENT_NAME" == "pull_request"* ]]
 then
     # For pull request events, we run on a local folder.
-    if [[ -z "$SCORECARD_POLICY_FILE" ]]
-    then
+    if [ -z ${SCORECARD_POLICY_FILE+x} ]; then
         $SCORECARD_BIN --local . --format "$SCORECARD_RESULTS_FORMAT" --show-details > "$SCORECARD_RESULTS_FILE"
     else
         $SCORECARD_BIN --local . --format "$SCORECARD_RESULTS_FORMAT" --show-details --policy "$SCORECARD_POLICY_FILE" > "$SCORECARD_RESULTS_FILE"
@@ -123,17 +132,17 @@ else
     # For other events, we run on the repo.
 
     # For the branch protection trigger, we only run the Branch-Protection check.
-    if [[ "$GITHUB_EVENT_NAME" == "branch_protection_rule" ]]
-    then
+    if [[ "$GITHUB_EVENT_NAME" == "branch_protection_rule" ]]; then
         export ENABLED_CHECKS="--checks Branch-Protection"
     fi
-    
-    if [[ -z "$SCORECARD_POLICY_FILE" ]]
-    then
+
+    if [ -z ${SCORECARD_POLICY_FILE+x} ]; then
         $SCORECARD_BIN --repo="$GITHUB_REPOSITORY" --format "$SCORECARD_RESULTS_FORMAT" $ENABLED_CHECKS --show-details > "$SCORECARD_RESULTS_FILE"
     else
         $SCORECARD_BIN --repo="$GITHUB_REPOSITORY" --format "$SCORECARD_RESULTS_FORMAT" $ENABLED_CHECKS --show-details --policy "$SCORECARD_POLICY_FILE" > "$SCORECARD_RESULTS_FILE"
     fi
 fi
 
-jq '.' "$SCORECARD_RESULTS_FILE"
+if [[ "$SCORECARD_RESULTS_FORMAT" != "default" ]]; then
+  jq '.' "$SCORECARD_RESULTS_FILE"
+fi

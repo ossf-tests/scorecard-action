@@ -12,20 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Testing: docker run -e GITHUB_REF=refs/heads/main \
-#           -e GITHUB_EVENT_NAME=branch_protection_rule \
-#           -e INPUT_RESULTS_FORMAT=sarif \
-#           -e INPUT_RESULTS_FILE=results.sarif \
-#           -e GITHUB_WORKSPACE=/ \
-#           -e INPUT_POLICY_FILE="/policy.yml" \
-#           -e INPUT_REPO_TOKEN=$GITHUB_AUTH_TOKEN \
-#           -e GITHUB_REPOSITORY="ossf/scorecard" \
-#           laurentsimon/scorecard-action:latest
-FROM gcr.io/openssf/scorecard:v4.2.0@sha256:3e5e5f7ed6d85f858ff444dd249f8ee78324690bd1686e698635558c69ead698 as base
+# See docs/development.md for details on how to test this image.
+
+FROM gcr.io/openssf/scorecard:v4.3.1@sha256:6224d1a27c35e7b216befba798cb782adb400047caa60fc1bea30030da392a1b as base
 
 # Build our image and update the root certs.
 # TODO: use distroless.
-FROM debian:11.3-slim@sha256:f75d8a3ac10acdaa9be6052ea5f28bcfa56015ff02298831994bd3e6d66f7e57
+FROM debian:11.3-slim@sha256:f6957458017ec31c4e325a76f39d6323c4c21b0e31572efa006baa927a160891
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     jq ca-certificates curl

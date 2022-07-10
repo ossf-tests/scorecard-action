@@ -29,16 +29,20 @@ The `pull_request` and `workflow_dispatch` triggers are experimental.
 
 Running the Scorecard action on a fork repository is not supported.
 
+Private repositories need a Personal Access Token (PAT).
+
+Public repositories need a PAT to enable the [Branch-Protection](https://github.com/ossf/scorecard/blob/main/docs/checks.md#branch-protection) check. Without a PAT, Scorecards will run all checks except the Branch-Protection check.
+
 GitHub Enterprise repositories are not supported.
 
 ## Installation
 The Scorecards Action is installed by setting up a workflow on the GitHub UI.
 
-Note: One Scorecards check ([Branch-Protection](https://github.com/ossf/scorecard/blob/main/docs/checks.md#branch-protection)) requires authentication using a Personal Access Token (PAT). If you want all Scorecards checks to run, you will need to follow the optional Authentication step. If you don't, all checks will run except Branch-Protection.
+**Private repositories**: Scorecards requires authentication using a Personal Access Token (PAT). So if you install Scorecards on a private repository, you will need to follow the optional Authentication step. If you don't, Scorecards will fail to run.
 
-Optional Authentication: Create a Personal Access Token (PAT) for authentication and save the token value as a repository secret; 
-    
-    (Note: If you have already installed Scorecards on your repository from the command line, you can reuse your existing PAT for the repository secret. If you no longer have access to the PAT, though, simply create a new one.)
+**Public repositories**: One Scorecards check ([Branch-Protection](https://github.com/ossf/scorecard/blob/main/docs/checks.md#branch-protection)) requires authentication using a Personal Access Token (PAT). If you want all Scorecards checks to run on a public repository, you will need to follow the optional Authentication step. If you don't, all checks will run except Branch-Protection.
+
+**Optional Authentication**: Create a Personal Access Token (PAT) for authentication and save the token value as a repository secret. (Note: If you have already installed Scorecards on your repository from the command line, you can reuse your existing PAT for the repository secret. If you no longer have access to the PAT, though, simply create a new one.)
 
 **Required**: Set up the workflow via the GitHub UI - see [Workflow Setup](#workflow-setup)
 
@@ -101,13 +105,11 @@ To verify that the Action is running successfully, click the repository's Action
 ![image](/images/actionconfirm.png)
 
 ### Troubleshooting 
-If the run has failed, the most likely reason is an authentication failure. Confirm that the Personal Access Token is saved as an encrypted secret within the same repository (see [Authentication](#authentication)). 
+If the run has failed, the most likely reason is an authentication failure. If you are running Scorecards on a private repository, confirm that the Personal Access Token is saved as an encrypted secret within the same repository (see [Authentication](#authentication)). In addition, provide the `repo` scope to your PAT. (The `repo > public_repo` scope only provides access to public repositories).
 
-If you install Scorecard on a private repository with a PAT token, provide the `repo` scope. (The `repo > public_repo` scope only provides access to public repositories.)
+If you install Scorecards on a repository owned by an organization that uses [SAML SSO](https://docs.github.com/en/enterprise-cloud@latest/authentication/authenticating-with-saml-single-sign-on/about-authentication-with-saml-single-sign-on) or if you see `403 Resource protected by organization SAML enforcement` in the logs, be sure to [enable SSO](https://docs.github.com/en/enterprise-cloud@latest/authentication/authenticating-with-saml-single-sign-on/authorizing-a-personal-access-token-for-use-with-saml-single-sign-on) for your PAT token (see [Authentication](#authentication)).
 
-If you install Scorecard on a repository owned by an organization that uses [SAML SSO](https://docs.github.com/en/enterprise-cloud@latest/authentication/authenticating-with-saml-single-sign-on/about-authentication-with-saml-single-sign-on) or if you see `403 Resource protected by organization SAML enforcement` in the logs, be sure to [enable SSO](https://docs.github.com/en/enterprise-cloud@latest/authentication/authenticating-with-saml-single-sign-on/authorizing-a-personal-access-token-for-use-with-saml-single-sign-on) for your PAT token (see [Authentication](#authentication)).
-
-If the PAT is saved as an encrypted secret and the run is still failing, confirm that you have not made any changes to the workflow yaml file that affected the syntax. Review the [workflow example](#workflow-example) and reset to the default values if necessary.
+If you use a PAT saved as an encrypted secret and the run is still failing, confirm that you have not made any changes to the workflow yaml file that affected the syntax. Review the [workflow example](#workflow-example) and reset to the default values if necessary.
 
 ## Manual Action Setup
     
@@ -122,7 +124,7 @@ First, [create a new file](https://docs.github.com/en/repositories/working-with-
 | ----- | -------- | ----------- |
 | `result_file` | yes | The file that contains the results. |
 | `result_format` | yes | The format in which to store the results [json \| sarif]. For GitHub's scanning dashboard, select `sarif`. |
-| `repo_token` | yes | PAT token with read-only access. Follow [these steps](#pat-token-creation) to create it. |
+| `repo_token` | yes | PAT token with read-only access. Follow [these steps](#authentication-with-pat) to create it. |
 | `publish_results` | recommended | This will allow you to display a badge on your repository to show off your hard work (release scheduled for Q2'22). See details [here](#publishing-results).|
 
 ### Publishing Results
@@ -142,7 +144,7 @@ Note: if you disable this option, the results of the Scorecards Action run will 
 
 ```yml
 name: Scorecards supply-chain security
-on: 
+on:
   # Only the default branch is supported.
   branch_protection_rule:
   schedule:
@@ -161,23 +163,28 @@ jobs:
     permissions:
       # Needed to upload the results to code-scanning dashboard.
       security-events: write
+      # Used to receive a badge. (Upcoming feature)
+      id-token: write
       actions: read
       contents: read
     
     steps:
       - name: "Checkout code"
-        uses: actions/checkout@ec3a7ce113134d7a93b817d10a8272cb61118579 # v2.4.0
+        uses: actions/checkout@a12a3943b4bdde767164f792f33f40b04645d846 # v3.0.0
         with:
           persist-credentials: false
 
       - name: "Run analysis"
-        uses: ossf/scorecard-action@c1aec4ac820532bab364f02a81873c555a0ba3a1 # v1.0.4
+        uses: ossf/scorecard-action@3e15ea8318eee9b333819ec77a36aca8d39df13e # v1.1.1
         with:
           results_file: results.sarif
           results_format: sarif
-          # (Optional) Read-only PAT token for Branch-Protection check. To create it,
-          # follow the steps in https://github.com/ossf/scorecard-action#pat-token-creation.
-          repo_token: ${{ secrets.SCORECARD_READ_TOKEN }}
+          # (Optional) Read-only PAT token. Uncomment the `repo_token` line below if:
+          # - you want to enable the Branch-Protection check on a *public* repository, or
+          # - you are installing Scorecards on a *private* repository
+          # To create the PAT, follow the steps in https://github.com/ossf/scorecard-action#authentication-with-pat.
+          # repo_token: ${{ secrets.SCORECARD_READ_TOKEN }}
+
           # Publish the results for public repositories to enable scorecard badges. For more details, see
           # https://github.com/ossf/scorecard-action#publishing-results. 
           # For private repositories, `publish_results` will automatically be set to `false`, regardless 
@@ -187,7 +194,7 @@ jobs:
       # Upload the results as artifacts (optional). Commenting out will disable uploads of run results in SARIF
       # format to the repository Actions tab.
       - name: "Upload artifact"
-        uses: actions/upload-artifact@82c141cc518b40d92cc801eee768e7aafc9c2fa2 # v2.3.1
+        uses: actions/upload-artifact@6673cd052c4cd6fcf4b4e6e60ea986c889389535 # v3.0.0
         with:
           name: SARIF file
           path: results.sarif
