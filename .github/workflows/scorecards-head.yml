@@ -72,7 +72,7 @@ jobs:
         uses: actions-ecosystem/action-create-issue@b02a3c1d9d929a5839315bd255e40389f0dab627 #v1
         with:
           github_token: ${{ secrets.SCORECARD_READ_TOKEN }}
-          title: "Failing e2e tests - scorecard-golang on ${{ github.repository }}"
+          title: "Failing e2e tests - scorecard-head on ${{ github.repository }}"
           body: |
             Matrix: ${{ toJSON(matrix) }}
             Repo: https://github.com/${{ github.repository }}/tree/${{ github.ref_name }}
