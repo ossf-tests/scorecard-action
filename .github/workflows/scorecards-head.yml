@@ -1,4 +1,4 @@
-name: scorecard-golang
+name: scorecard-head
 on:
   workflow_dispatch:
   # Only the default branch is supported.
@@ -12,7 +12,7 @@ on:
 
 jobs:
   scorecard-golang:
-    name: Scorecard Golang
+    name: Scorecard HEAD
     runs-on: ubuntu-latest
     permissions:
       # Needed to upload the results to code-scanning dashboard.
@@ -78,7 +78,7 @@ jobs:
             Repo: https://github.com/${{ github.repository }}/tree/${{ github.ref_name }}
             Run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
             Workflow name: ${{ github.workflow }}
-            Workflow file: https://github.com/${{ github.repository }}/tree/main/.github/workflows/scorecards-golang.yml
+            Workflow file: https://github.com/${{ github.repository }}/tree/main/.github/workflows/scorecards-head.yml
             Trigger: ${{ github.event_name }}
             Branch: ${{ github.ref_name }}
           repo: "ossf/scorecard-action"
