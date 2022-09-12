@@ -26,6 +26,7 @@ jobs:
       matrix:
         results_format: [sarif, json, default]
         publish_results: [false, true]
+        token: [ GITHUB_TOKEN, SCORECARD_READ_TOKEN ]
         include:
           - results_format: sarif
             upload_result: true
@@ -47,7 +48,7 @@ jobs:
           results_format: ${{ matrix.results_format }}
           # Read-only PAT token. To create it,
           # follow the steps in https://github.com/ossf/scorecard-action#pat-token-creation.
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          repo_token: ${{ secrets[matrix.token] }}
           internal_default_token: ${{ secrets.GITHUB_TOKEN }}
           # Publish the results to enable scorecard badges. For more details, see
           # https://github.com/ossf/scorecard-action#publishing-results.
