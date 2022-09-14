@@ -11,7 +11,7 @@ on:
 # Declare default permissions as read only.
 
 jobs:
-  scorecard-golang:
+  scorecard-head:
     name: Scorecard HEAD
     runs-on: ubuntu-latest
     permissions:
@@ -71,7 +71,7 @@ jobs:
         with:
           sarif_file: results.sarif
   report-failure:
-      needs: scorecard-golang
+      needs: scorecard-head
       runs-on: ubuntu-latest
       steps:
         - name: "Report Scorecard run failure"
