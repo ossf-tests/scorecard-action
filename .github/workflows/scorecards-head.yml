@@ -21,7 +21,7 @@ jobs:
       contents: read
       id-token: write # needed for keyless signing
     strategy:
-      max-parallel: 2
+      max-parallel: 1
       fail-fast: false
       matrix:
         results_format: [sarif, json, default]
