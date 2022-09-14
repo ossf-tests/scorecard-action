@@ -11,7 +11,7 @@ on:
 # Declare default permissions as read only.
 
 jobs:
-  scorecard-golang:
+  scorecard-head:
     name: Scorecard HEAD
     runs-on: ubuntu-latest
     permissions:
@@ -70,8 +70,12 @@ jobs:
         uses: github/codeql-action/upload-sarif@5f532563584d71fdef14ee64d17bafb34f751ce5 # v1.0.26
         with:
           sarif_file: results.sarif
+  report-failure:
+    needs: scorecard-head
+    runs-on: ubuntu-latest
+    if: always() && needs.scorecard-head.result != 'success'
+    steps:
       - name: "Report Scorecard run failure"
-        if: always() && steps.scorecard-run.outcome != 'success'
         uses: actions-ecosystem/action-create-issue@b02a3c1d9d929a5839315bd255e40389f0dab627 #v1
         with:
           github_token: ${{ secrets.SCORECARD_READ_TOKEN }}
