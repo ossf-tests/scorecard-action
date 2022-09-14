@@ -73,9 +73,9 @@ jobs:
   report-failure:
       needs: scorecard-head
       runs-on: ubuntu-latest
+      if: always() && needs.scorecard-golang.result != 'success'
       steps:
         - name: "Report Scorecard run failure"
-          if: always() && needs.scorecard-golang.result != 'success'
           uses: actions-ecosystem/action-create-issue@b02a3c1d9d929a5839315bd255e40389f0dab627 #v1
           with:
             github_token: ${{ secrets.SCORECARD_READ_TOKEN }}
