@@ -4,11 +4,12 @@ on:
   # Only the default branch is supported.
   branch_protection_rule:
   schedule:
-    - cron: '0 0 * * *'
+    - cron: "0 0 * * *"
   push:
     branches: [ main ]
 
 # Declare default permissions as read only.
+permissions: read-all
 
 jobs:
   scorecard-latest-release:
@@ -17,9 +18,10 @@ jobs:
     permissions:
       # Needed to upload the results to code-scanning dashboard.
       security-events: write
-      actions: read
-      contents: read
+      # actions: read
+      # contents: read
       id-token: write
+
     strategy:
       max-parallel: 1
       fail-fast: false
@@ -34,11 +36,13 @@ jobs:
             upload_result: false
           - results_format: default
             upload_result: false
+
     steps:
       - name: "Checkout code"
         uses: actions/checkout@ec3a7ce113134d7a93b817d10a8272cb61118579 # v2.4.0
         with:
           persist-credentials: false
+
       - name: "Run Scorecard analysis"
         id: scorecard-run
         uses: ossf/scorecard-action@main
@@ -54,6 +58,7 @@ jobs:
           # regardless of the value entered here.
           publish_results: ${{ matrix.publish_results }}
           internal_publish_base_url: "https://api-staging.securityscorecards.dev"
+
       # Upload the results as artifacts (optional).
       - name: "Upload artifact"
         if: steps.scorecard-run.outcome == 'success'
@@ -62,16 +67,19 @@ jobs:
           name: ${{ matrix.results_format }} file
           path: results.${{ matrix.results_format }}
           retention-days: 5
+
       # Upload the results to GitHub's code scanning dashboard.
       - name: "Upload to code-scanning"
         if: matrix.upload_result == true && steps.scorecard-run.outcome == 'success'
         uses: github/codeql-action/upload-sarif@5f532563584d71fdef14ee64d17bafb34f751ce5 # v1.0.26
         with:
           sarif_file: results.sarif
+
   report-failure:
     needs: scorecard-latest-release
     runs-on: ubuntu-latest
     if: always() && needs.scorecard-latest-release.result != 'success'
+
     steps:
       - name: "Report Scorecard run failure"
         uses: actions-ecosystem/action-create-issue@b02a3c1d9d929a5839315bd255e40389f0dab627 #v1
