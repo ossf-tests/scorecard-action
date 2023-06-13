@@ -4,11 +4,12 @@ on:
   # Only the default branch is supported.
   branch_protection_rule:
   schedule:
-    - cron: '0 2 * * *'
+    - cron: "0 2 * * *"
   push:
     branches: [ main ]
 
 # Declare default permissions as read only.
+permissions: read-all
 
 jobs:
   scorecard-head:
@@ -17,16 +18,17 @@ jobs:
     permissions:
       # Needed to upload the results to code-scanning dashboard.
       security-events: write
-      actions: read
-      contents: read
-      id-token: write # needed for keyless signing
+      # actions: read
+      # contents: read
+      id-token: write
+
     strategy:
       max-parallel: 1
       fail-fast: false
       matrix:
         results_format: [sarif, json, default]
         publish_results: [false, true]
-        token: [ GITHUB_TOKEN, SCORECARD_READ_TOKEN ]
+        token: [GITHUB_TOKEN, SCORECARD_READ_TOKEN]
         include:
           - results_format: sarif
             upload_result: true
@@ -34,12 +36,14 @@ jobs:
             upload_result: false
           - results_format: default
             upload_result: false
+
     steps:
       - name: "Checkout code"
-        uses: actions/checkout@ec3a7ce113134d7a93b817d10a8272cb61118579 # v2.4.0
+        uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # v3.1.0
         with:
           persist-credentials: false
-      - name: "Run analysis"
+
+      - name: "Run Scorecard analysis"
         id: scorecard-run
         uses: docker://gcr.io/openssf/scorecard-action:latest
         with:
@@ -56,24 +60,28 @@ jobs:
           # regardless of the value entered here.
           publish_results: ${{ matrix.publish_results }}
           internal_publish_base_url: "https://api-staging.securityscorecards.dev"
+
       # Upload the results as artifacts (optional).
       - name: "Upload artifact"
         if: steps.scorecard-run.outcome == 'success'
-        uses: actions/upload-artifact@82c141cc518b40d92cc801eee768e7aafc9c2fa2 # v2.3.1
+        uses: actions/upload-artifact@3cea5372237819ed00197afe530f5a7ea3e805c8 # v3.1.0
         with:
           name: ${{ matrix.results_format }} file
           path: results.${{ matrix.results_format }}
           retention-days: 5
+
       # Upload the results to GitHub's code scanning dashboard.
       - name: "Upload to code-scanning"
         if: matrix.upload_result == true && steps.scorecard-run.outcome == 'success'
-        uses: github/codeql-action/upload-sarif@5f532563584d71fdef14ee64d17bafb34f751ce5 # v1.0.26
+        uses: github/codeql-action/upload-sarif@807578363a7869ca324a79039e6db9c843e0e100 # v2.1.27
         with:
           sarif_file: results.sarif
+
   report-failure:
     needs: scorecard-head
     runs-on: ubuntu-latest
     if: always() && needs.scorecard-head.result != 'success'
+
     steps:
       - name: "Report Scorecard run failure"
         uses: actions-ecosystem/action-create-issue@b02a3c1d9d929a5839315bd255e40389f0dab627 #v1
