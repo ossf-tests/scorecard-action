@@ -10,12 +10,14 @@ jobs:
   auto-sync-fork:
     name: Sync fork
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: "gh repo sync"
         id: gh-repo-sync
         run: gh repo sync ${{ github.repository }} -b main
         env:
-          GITHUB_TOKEN: ${{ secrets.SCORECARD_READ_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
       - name: "report failure"
         if: always() && steps.gh-repo-sync.outcome != 'success'
         uses: actions-ecosystem/action-create-issue@b02a3c1d9d929a5839315bd255e40389f0dab627 #v1
