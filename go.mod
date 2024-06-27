@@ -8,7 +8,7 @@ require (
 	github.com/google/go-github/v46 v46.0.0
 	github.com/ossf/scorecard/v5 v5.0.0-rc2.0.20240509182734-7ce860946928
 	github.com/sigstore/cosign/v2 v2.2.4
-	github.com/spf13/cobra v1.8.0
+	github.com/spf13/cobra v1.8.1
 	golang.org/x/net v0.26.0
 )
 
@@ -137,7 +137,7 @@ require (
 	github.com/googleapis/gax-go/v2 v2.12.4 // indirect
 	github.com/h2non/filetype v1.1.3 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
-	github.com/hashicorp/go-retryablehttp v0.7.5 // indirect
+	github.com/hashicorp/go-retryablehttp v0.7.7 // indirect
 	github.com/hashicorp/hcl v1.0.1-vault-5 // indirect
 	github.com/ianlancetaylor/demangle v0.0.0-20240312041847-bd984b5ce465 // indirect
 	github.com/imdario/mergo v0.3.16 // indirect
