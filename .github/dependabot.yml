@@ -4,31 +4,10 @@ updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
     commit-message:
       prefix: ":seedling:"
     groups:
       github-actions:
         patterns:
           - "*"
-
-  # Maintain dependencies for Docker
-  - package-ecosystem: "docker"
-    directory: /
-    schedule:
-      interval: "weekly"
-    commit-message:
-      prefix: ":seedling:"
-    groups:
-      docker-images:
-        patterns:
-          - "*"
-
-  # Maintain dependencies for go
-  - package-ecosystem: "gomod"
-    directory: "/"
-    open-pull-requests-limit: 20
-    schedule:
-      interval: "daily"
-    commit-message:
-      prefix: ":seedling:"
