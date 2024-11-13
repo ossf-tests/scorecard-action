@@ -37,7 +37,7 @@ jobs:
           persist-credentials: false
       - name: "Run analysis"
         id: scorecard-run
-        uses: docker://gcr.io/openssf/scorecard-action:latest
+        uses: docker://ghcr.io/ossf/scorecard-action:latest
         with:
           entrypoint: "/scorecard-action"
           results_file: results.${{ matrix.results_format }}
