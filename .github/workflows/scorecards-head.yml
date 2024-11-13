@@ -76,6 +76,7 @@ jobs:
         with:
           github_token: ${{ secrets.SCORECARD_READ_TOKEN }}
           title: "Failing e2e tests - scorecard-head on ${{ github.repository }}"
+          assignees: "scorecard-maintainers"
           body: |
             Matrix: ${{ toJSON(matrix) }}
             Repo: https://github.com/${{ github.repository }}/tree/${{ github.ref_name }}
