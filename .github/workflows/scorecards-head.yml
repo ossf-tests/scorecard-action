@@ -51,13 +51,13 @@ jobs:
           # For private repositories, `publish_results` will automatically be set to `false`,
           # regardless of the value entered here.
           publish_results: ${{ matrix.publish_results }}
-          internal_publish_base_url: "https://api-staging.securityscorecards.dev"
+          internal_publish_base_url: "https://api-staging.scorecard.dev"
       # Upload the results as artifacts (optional).
       - name: "Upload artifact"
         if: steps.scorecard-run.outcome == 'success'
         uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
         with:
-          name: ${{ matrix.results_format }} file
+          name: ${{ join(matrix.*, '-') }} # name needs to be unique across matrix runs
           path: results.${{ matrix.results_format }}
           retention-days: 5
       # Upload the results to GitHub's code scanning dashboard.
