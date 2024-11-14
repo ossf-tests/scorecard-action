@@ -72,19 +72,22 @@ jobs:
     if: always() && needs.scorecard-head.result != 'success'
     steps:
       - name: "Report Scorecard run failure"
-        uses: actions-ecosystem/action-create-issue@b02a3c1d9d929a5839315bd255e40389f0dab627 #v1
-        with:
-          github_token: ${{ secrets.SCORECARD_READ_TOKEN }}
-          title: "Failing e2e tests - scorecard-head on ${{ github.repository }}"
-          body: |
-            Matrix: ${{ toJSON(matrix) }}
+        env:
+          ISSUE_BODY: |
             Repo: https://github.com/${{ github.repository }}/tree/${{ github.ref_name }}
             Run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
             Workflow name: ${{ github.workflow }}
             Workflow file: https://github.com/${{ github.repository }}/tree/main/.github/workflows/scorecards-head.yml
             Trigger: ${{ github.event_name }}
             Branch: ${{ github.ref_name }}
-          repo: "ossf/scorecard-action"
-          labels: |
-            e2e
-            automated-tests
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        with:
+          github-token: ${{ secrets.SCORECARD_READ_TOKEN }}
+          script: |
+            github.rest.issues.create({
+              owner: "ossf",
+              repo: "scorecard-action",
+              title: "Failing e2e tests - scorecard-head on ${{ github.repository }}",
+              body: process.env.ISSUE_BODY,
+              labels: ["e2e", "automated-tests"]
+            });
