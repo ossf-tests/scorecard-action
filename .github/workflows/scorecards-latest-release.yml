@@ -67,7 +67,7 @@ jobs:
   report-failure:
     needs: scorecard-latest-release
     runs-on: ubuntu-latest
-    if: always() # && needs.scorecard-latest-release.result != 'success'
+    if: always() && needs.scorecard-latest-release.result != 'success'
     steps:
       - name: "Report Scorecard run failure"
         env:
